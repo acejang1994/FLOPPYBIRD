@@ -6,8 +6,10 @@ Created on Sat Mar  8 18:09:47 2014
 """
 import pygame
 from pygame.locals import *
-
+import os
+from os import chdir
 from random import *
+from os.path import dirname
 
 class FloppyBird:
     
@@ -29,6 +31,7 @@ class FloppyBird:
 
         self.bird=Bird(self.screen)
         self.pipe = Pipe(self.screen)        
+        self.startGame = False
         
     def display_score(self):
         message = 'Score: ' + str(self.score)
@@ -38,7 +41,6 @@ class FloppyBird:
     
     def update_display_score(self):
         self.score += 1
- 
         
     def update(self):
         self.clock.tick(60)
@@ -51,15 +53,20 @@ class FloppyBird:
                 if event.key == K_ESCAPE:
                     exit()
                 if event.key == K_SPACE:
+                    self.startGame=True
                     self.bird.jump()
         
         self.display_score()
+        
+        if self.startGame:
             if self.pipe.x == 0:
                 self.pipe.x = self.screen.get_width()
                 self.pipe.update()
                 
-        self.bird.update()
-        self.pipe.update()
+            self.bird.update()
+            self.pipe.update()
+        else:
+            self.bird.drawInit()
         
         pygame.display.flip()
         
@@ -67,26 +74,37 @@ class Bird:
     
     def __init__(self,screen):
         self.screen=screen
-        
-        self.radius=self.screen.get_width()/40.0
+        temppic=pygame.image.load(os.path.join('','paul.png'))
+        self.picture=pygame.transform.scale(temppic,(int(temppic.get_width()*0.4),int(temppic.get_height()*0.4)))
         self.yposition=self.screen.get_height()/2.0
         self.yvelocity=0.0
         self.acceleration=self.screen.get_height()/1800.0
         self.xposition=self.screen.get_width()/5.0        
-        self.color = (255,255,255)
-        
+
     def update_position(self):
         self.yposition +=self.yvelocity
         self.yvelocity += self.acceleration
-        if self.yposition>self.screen.get_height()-self.radius:
-            self.yposition=self.screen.get_height()-self.radius
+        if self.yposition>self.screen.get_height()-self.picture.get_height()*0.5:                
+            self.yposition=self.screen.get_height()-self.picture.get_height()*0.5
             
     def jump(self):
         self.yvelocity=-7.0
-    
+        
+#    def rotate(self):
+#        orig_rect = self.picture.get_rect()
+#        rot_image = pygame.transform.rotate(self.picture,10)
+#        rot_rect = orig_rect.copy()
+#        rot_rect.center = rot_image.get_rect().center
+#        rot_image = rot_image.subsurface(rot_rect).copy()
+#        self.picture=rot_image
+        
     def update(self):
+#        self.rotate()
         self.update_position()
-        pygame.draw.circle(self.screen,(120,12,32),(int(self.xposition),int(self.yposition)),int(self.radius),0)
+        self.screen.blit(self.picture,(self.xposition,self.yposition))
+    
+    def drawInit(self):
+        self.screen.blit(self.picture,(self.xposition,self.yposition))
         
 class Pipe:
     def __init__(self,screen):
@@ -99,10 +117,9 @@ class Pipe:
         self.length1 = self.screen.get_height()*rand
         self.length2 = self.screen.get_height() - self.length1 - self.space
         self.width = self.screen.get_width()/8.0
-    
+        
     def update_position(self):
         self.x += -1.0
-        
         
     def update(self):
         self.update_position()
@@ -113,4 +130,3 @@ if __name__ =='__main__':
     game = FloppyBird()
     while 1:
         game.update()
-    
