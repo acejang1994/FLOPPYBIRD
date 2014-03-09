@@ -28,7 +28,7 @@ class FloppyBird:
         self.score =0
 
         self.bird=Bird(self.screen)
-        self.pipe = Pipe(self.screen)        
+        self.pipes = []    
         
     def display_score(self):
         message = 'Score: ' + str(self.score)
@@ -39,6 +39,13 @@ class FloppyBird:
     def update_display_score(self):
         self.score += 1
  
+    def update_pipes(self):
+        if len(self.pipes)==0:
+            self.pipes.append(Pipe(self.screen))
+        if self.pipes[0].x<=-1*self.pipes[0].width:
+            self.pipes.pop(0)
+        if self.pipes[-1].x==self.screen.get_width()-100:
+            self.pipes.append(Pipe(self.screen))
         
     def update(self):
         self.clock.tick(60)
@@ -54,12 +61,11 @@ class FloppyBird:
                     self.bird.jump()
         
         self.display_score()
-        if self.pipe.x == -100:
-            self.pipe.x = self.screen.get_width()
-            self.pipe.update()
-                
+        
+        for pipe in self.pipes:
+            pipe.update()
+        self.update_pipes()
         self.bird.update()
-        self.pipe.update()
         
         pygame.display.flip()
         
