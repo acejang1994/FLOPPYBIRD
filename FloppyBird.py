@@ -40,7 +40,12 @@ class FloppyBird:
         fontobject=pygame.font.SysFont('Arial', 18)
         if len(message) != 0:
             self.screen.blit(fontobject.render(message, 1, (255, 255, 255)),((self.screen.get_width()*0.8), 0))
-            
+        
+    def display_instructions(self):
+        message = 'PRESS THE [SPACE] KEY TO START!'
+        fontobject=pygame.font.SysFont('Arial', 18)
+        self.screen.blit(fontobject.render(message, 1, (255, 255, 255)),(self.screen.get_width()*0.15,self.screen.get_height()*0.4))
+        
     def display_loss(self):
         message = 'YOU LOST'
         fontobject=pygame.font.SysFont('Arial', 50)
@@ -48,7 +53,7 @@ class FloppyBird:
             
     def update_display_score(self):
         self.score += 1
- 
+            
     def update_pipes(self):
         if len(self.pipes)==0:
             self.pipes.append(Pipe(self.screen))
@@ -91,7 +96,9 @@ class FloppyBird:
             if self.startGame:
                 self.update_pipes()
                 self.bird.update()
-            else: self.bird.drawInit()
+            else: 
+                self.bird.drawInit()
+                self.display_instructions()
         else:
            self.display_loss()
         
@@ -118,20 +125,20 @@ class Bird:
     def jump(self):
         self.yvelocity=-7.0
         
-    def rotate(self):
-        orig_rect = self.picture.get_rect()
-        orig_center = orig_rect.center
-        
-        rot_image = pygame.transform.rotate(self.picture,60)
-        
-        rot_rect = rot_image.get_rect()
-        rot_center = rot_rect.center
-        rot_center = orig_center
-        
-        self.picture=rot_image
+#    def rotate(self):
+#        orig_rect = self.picture.get_rect()
+#        orig_center = orig_rect.center
+#        
+#        rot_image = pygame.transform.rotate(self.picture,60)
+#        
+#        rot_rect = rot_image.get_rect()
+#        rot_center = rot_rect.center
+#        rot_center = orig_center
+#        
+#        self.picture=rot_image
         
     def update(self):
-        self.rotate()
+#        self.rotate()
         self.thing = True
         self.update_position()
         self.screen.blit(self.picture,(self.xposition,self.yposition))
