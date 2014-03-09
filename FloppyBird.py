@@ -35,6 +35,12 @@ class FloppyBird:
         fontobject=pygame.font.SysFont('Arial', 18)
         if len(message) != 0:
             self.screen.blit(fontobject.render(message, 1, (255, 255, 255)),((self.screen.get_width()*0.8), 0))
+            
+    def display_loss(self):
+        message = 'YOU LOST'
+        fontobject=pygame.font.SysFont('Arial', 50)
+        self.screen.blit(fontobject.render(message, 1, (255, 255, 255)),(self.screen.get_width()/4.0,self.screen.get_height()/2.5))
+        
     
     def update_display_score(self):
         self.score += 1
@@ -44,8 +50,21 @@ class FloppyBird:
             self.pipes.append(Pipe(self.screen))
         if self.pipes[0].x<=-1*self.pipes[0].width:
             self.pipes.pop(0)
-        if self.pipes[-1].x==self.screen.get_width()-100:
+        if self.pipes[-1].x==self.screen.get_width()-250:
             self.pipes.append(Pipe(self.screen))
+    
+    def game(self):
+            
+        if self.bird.yposition>=self.screen.get_height()-self.bird.radius:
+            return False
+        else:
+            return True
+#        elif self.pipes:  
+#            for pipe in self.pipes:
+#                if self.bird.xposition == range(pipe.x, pipe.x+ pipe.width) and self.bird.yposition == range( 0,pipe.y+ pipe.length1+ pipe.space):
+#                    return False
+        
+        
         
     def update(self):
         self.clock.tick(60)
@@ -60,12 +79,17 @@ class FloppyBird:
                 if event.key == K_SPACE:
                     self.bird.jump()
         
-        self.display_score()
-        
-        for pipe in self.pipes:
-            pipe.update()
-        self.update_pipes()
-        self.bird.update()
+        if self.game():
+            self.display_score()
+            
+            for pipe in self.pipes:
+                pipe.update()
+                if self.bird.xposition == pipe.x:
+                    self.update_display_score()
+            self.update_pipes()
+            self.bird.update()
+        else:
+           self.display_loss()
         
         pygame.display.flip()
         
@@ -98,7 +122,7 @@ class Pipe:
     def __init__(self,screen):
         self.screen=screen        
         rand = random()
-        self.space = self.screen.get_height()/4.0*(random()*.3+.7)
+        self.space = self.screen.get_height()/3.5*(random()*.3+.7)
         
         self.x = self.screen.get_width()
         self.y = 0  
@@ -107,13 +131,13 @@ class Pipe:
         self.width = self.screen.get_width()/8.0
     
     def update_position(self):
-        self.x += -1.0
+        self.x += -2.0
         
         
     def update(self):
         self.update_position()
         pygame.draw.rect(self.screen, (255,255,255),pygame.Rect(self.x,self.y,self.width,self.length1-self.space))     
-        pygame.draw.rect(self.screen, (0,0,0),pygame.Rect(self.x ,(self.y+ self.length1+ self.space),self.width,self.length2))  
+        pygame.draw.rect(self.screen, (255,255,255),pygame.Rect(self.x ,(self.y+ self.length1+ self.space),self.width,self.length2))  
 
 if __name__ =='__main__':
     game = FloppyBird()
