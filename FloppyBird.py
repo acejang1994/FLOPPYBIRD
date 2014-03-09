@@ -10,6 +10,7 @@ import os
 from os import chdir
 from random import *
 from os.path import dirname
+import numpy as np
 
 class FloppyBird:
     
@@ -30,12 +31,19 @@ class FloppyBird:
         self.score =0
 
         self.bird=Bird(self.screen)
-     
+        self.soundPlayed=False
         self.startGame = False
         self.bg = Background(self.screen)
 
         self.pipes = []    
+        self.song=pygame.mixer.music.load('Pirates of the caribbean 8-bit.mp3')        
+        pygame.mixer.music.play()
         
+    def explosion(self):
+        self.track = pygame.mixer.music.load('Explosion.wav')        
+        pygame.mixer.music.play()
+        self.soundPlayed=True
+                            
     def display_score(self):
         message = 'Score: ' + str(self.score)
         fontobject=pygame.font.SysFont('Arial', 18)
@@ -47,9 +55,13 @@ class FloppyBird:
         fontobject=pygame.font.SysFont('Arial', 18)
         self.screen.blit(fontobject.render(message, 1, (255, 255, 255)),(self.screen.get_width()*0.15,self.screen.get_height()*0.4))
         
+        
     def display_loss(self):
-        message = 'YOU LOST'
+        message = 'YOU LOST'  
+        message2 = 'Your score: '+ str(self.score)
         fontobject=pygame.font.SysFont('Arial', 50)
+        fontobject2=pygame.font.SysFont('Arial', 30)
+        self.screen.blit(fontobject2.render(message2, 1, (255, 255, 255)),(self.screen.get_width()/3.0,self.screen.get_height()/1.8))
         self.screen.blit(fontobject.render(message, 1, (255, 255, 255)),(self.screen.get_width()/4.0,self.screen.get_height()/2.5))
             
     def update_display_score(self):
@@ -62,17 +74,35 @@ class FloppyBird:
             self.pipes.pop(0)
         if self.pipes[-1].x==self.screen.get_width()-250:
             self.pipes.append(Pipe(self.screen,self.bg.sky1Size[1]))
-    
-    def game(self):
             
+    def gameOn(self):            
         if self.bird.yposition>=self.screen.get_height()-self.bird.picture.get_height():
             return False
-        else:
-            return True
-#        elif self.pipes:  
-#            for pipe in self.pipes:
-#                if self.bird.xposition == range(pipe.x, pipe.x+ pipe.width) and self.bird.yposition == range( 0,pipe.y+ pipe.length1+ pipe.space):
-#                    return False       
+        for pipe in self.pipes:
+            if self.bird.xposition in range(int(pipe.x) , int(pipe.x+pipe.pipeSize[0])) and self.bird.yposition in range(0, int(pipe.topPipeHeight+pipe.pipeTopSize[1])):
+                return False
+            if self.bird.xposition +self.bird.picture.get_width() in range(int(pipe.x) , int(pipe.x+pipe.pipeSize[0])) and self.bird.yposition in range(0, int(pipe.topPipeHeight+pipe.pipeTopSize[1])):
+                return False
+            if self.bird.xposition in range(int(pipe.x) , int(pipe.x+pipe.pipeSize[0])) and self.bird.yposition +self.bird.picture.get_height() in range(0, int(pipe.topPipeHeight+pipe.pipeTopSize[1])):
+                return False
+            if self.bird.xposition +self.bird.picture.get_width() in range(int(pipe.x) , int(pipe.x+pipe.pipeSize[0])) and self.bird.yposition +self.bird.picture.get_height() in range(0, int(pipe.topPipeHeight+pipe.pipeTopSize[1])):
+                return False
+            
+            if self.bird.xposition in range(int(pipe.x) , int(pipe.x+pipe.pipeSize[0])) and self.bird.yposition in range(int(pipe.topPipeHeight+pipe.pipeTopSize[1]+ pipe.width), int(pipe.topPipeHeight+pipe.pipeTopSize[1]+ pipe.width+ pipe.bottomPipeHeight+pipe.pipeTopSize[1])):
+                return False
+            if self.bird.xposition +self.bird.picture.get_width() in range(int(pipe.x) , int(pipe.x+pipe.pipeSize[0])) and self.bird.yposition in range(int(pipe.topPipeHeight+pipe.pipeTopSize[1]+ pipe.width), int(pipe.topPipeHeight+pipe.pipeTopSize[1]+ pipe.width+pipe.bottomPipeHeight+pipe.pipeTopSize[1])):
+                return False
+            if self.bird.xposition in range(int(pipe.x) , int(pipe.x+pipe.pipeSize[0])) and self.bird.yposition +self.bird.picture.get_height() in range(int(pipe.topPipeHeight+pipe.pipeTopSize[1]+ pipe.width), int(pipe.topPipeHeight+pipe.pipeTopSize[1]+ pipe.width+pipe.bottomPipeHeight+pipe.pipeTopSize[1])):
+                return False
+            if self.bird.xposition +self.bird.picture.get_width() in range(int(pipe.x) , int(pipe.x+pipe.pipeSize[0])) and self.bird.yposition +self.bird.picture.get_height() in range(int(pipe.topPipeHeight+pipe.pipeTopSize[1]+ pipe.width), int(pipe.topPipeHeight+pipe.pipeTopSize[1]+ pipe.width+pipe.bottomPipeHeight+pipe.pipeTopSize[1])):
+                return False
+                                                                
+
+     
+        return True
+        
+    
+            
     def update(self):
         self.clock.tick(60)
         
@@ -86,10 +116,9 @@ class FloppyBird:
                 if event.key == K_SPACE:
                     self.startGame=True
                     self.bird.jump()
-        
-        if self.game():
-            
-            
+         
+        if self.gameOn():
+                        
             if self.startGame:
                 self.bg.update()
                 self.update_pipes()
@@ -103,8 +132,10 @@ class FloppyBird:
                 self.bird.drawInit()
                 self.display_instructions()
         else:
-           self.display_loss()
-        
+            if not self.soundPlayed:
+                self.explosion()
+            self.display_loss()
+                    
         pygame.display.flip()
         
 class Bird:
@@ -124,9 +155,11 @@ class Bird:
         self.yvelocity += self.acceleration
         if self.yposition>self.screen.get_height()-self.picture.get_height()*0.5:                
             self.yposition=self.screen.get_height()-self.picture.get_height()*0.5
+        elif self.yposition<0:                
+            self.yposition=0
             
     def jump(self):
-        self.yvelocity=-7.0
+        self.yvelocity=-1*self.screen.get_height()*.012
         
     def update(self):
         self.thing = True
@@ -165,9 +198,9 @@ class Pipe:
         self.top=0
         
     def update_position(self):
-        self.x += -2.0
+        self.x += -2.0 
         
-    def update(self):
+    def update(self): 
         self.update_position()
         #print self.topPipeHeight, self.x
         for i in range(self.topPipeHeight):
