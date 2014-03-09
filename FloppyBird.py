@@ -84,8 +84,6 @@ class FloppyBird:
         if self.bird.yposition>=self.screen.get_height()-self.bird.picture.get_height():
             return False
         for pipe in self.pipes:
-            print pipe.length2
-#            print self.bird.yposition
             if self.bird.xposition in range(int(pipe.x) , int(pipe.x+pipe.width)) and self.bird.yposition in range(0, int(pipe.length1- pipe.space)):
                 return False
             if self.bird.xposition +self.bird.picture.get_width() in range(int(pipe.x) , int(pipe.x+pipe.width)) and self.bird.yposition in range(0, int(pipe.length1- pipe.space)):
