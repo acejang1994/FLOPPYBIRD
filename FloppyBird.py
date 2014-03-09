@@ -22,7 +22,17 @@ class FloppyBird:
         pygame.display.set_caption('Floppy Bird')
         
         self.clock=pygame.time.Clock()
-        self.bird=Bird(self.screen)             
+        self.bird=Bird(self.screen) 
+        self.score =0            
+        
+    def display_score(self):
+        message = 'Score: ' + str(self.score)
+        fontobject=pygame.font.SysFont('Arial', 18)
+        if len(message) != 0:
+            self.screen.blit(fontobject.render(message, 1, (255, 255, 255)),((self.screen.get_width()*0.8), 0))
+    
+    def update_display_score(self):
+        self.score += 1
         
     def update(self):
         self.clock.tick(60)
@@ -34,7 +44,9 @@ class FloppyBird:
             if event.type == KEYDOWN:
                 if event.key == K_SPACE:
                     self.bird.jump()
-                
+        
+        
+        self.display_score()
         self.bird.update()
         
         pygame.display.flip()
