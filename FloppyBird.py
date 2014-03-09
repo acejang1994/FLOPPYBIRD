@@ -32,6 +32,7 @@ class FloppyBird:
         self.bird=Bird(self.screen)
      
         self.startGame = False
+        self.bg = Background(self.screen)
 
         self.pipes = []    
         
@@ -56,11 +57,11 @@ class FloppyBird:
             
     def update_pipes(self):
         if len(self.pipes)==0:
-            self.pipes.append(Pipe(self.screen))
-        if self.pipes[0].x<=-1*self.pipes[0].width:
+            self.pipes.append(Pipe(self.screen,self.bg.sky1Size[1]))
+        if self.pipes[0].x<=-1*self.pipes[0].pipeSize[0]:
             self.pipes.pop(0)
         if self.pipes[-1].x==self.screen.get_width()-250:
-            self.pipes.append(Pipe(self.screen))
+            self.pipes.append(Pipe(self.screen,self.bg.sky1Size[1]))
     
     def game(self):
             
@@ -75,7 +76,7 @@ class FloppyBird:
     def update(self):
         self.clock.tick(60)
         
-        self.screen.fill((12,241,52))
+        self.screen.fill(0)
         for event in pygame.event.get():
             if event.type==QUIT:
                 exit()
@@ -87,15 +88,17 @@ class FloppyBird:
                     self.bird.jump()
         
         if self.game():
-            self.display_score()
             
-            for pipe in self.pipes:
-                pipe.update()
-                if self.bird.xposition == pipe.x:
-                    self.update_display_score()
+            
             if self.startGame:
+                self.bg.update()
                 self.update_pipes()
+                for pipe in self.pipes:
+                    pipe.update()
+                    if self.bird.xposition == pipe.x:
+                        self.update_display_score()
                 self.bird.update()
+                self.display_score()
             else: 
                 self.bird.drawInit()
                 self.display_instructions()
@@ -125,20 +128,7 @@ class Bird:
     def jump(self):
         self.yvelocity=-7.0
         
-#    def rotate(self):
-#        orig_rect = self.picture.get_rect()
-#        orig_center = orig_rect.center
-#        
-#        rot_image = pygame.transform.rotate(self.picture,60)
-#        
-#        rot_rect = rot_image.get_rect()
-#        rot_center = rot_rect.center
-#        rot_center = orig_center
-#        
-#        self.picture=rot_image
-        
     def update(self):
-#        self.rotate()
         self.thing = True
         self.update_position()
         self.screen.blit(self.picture,(self.xposition,self.yposition))
@@ -147,24 +137,100 @@ class Bird:
         self.screen.blit(self.picture,(self.xposition,self.yposition))
         
 class Pipe:
-    def __init__(self,screen):
-        self.screen=screen        
-        rand = random()
-        self.space = self.screen.get_height()/3.5*(random()*.3+.7)
+    def __init__(self,screen,yPos):
+        self.screen=screen    
         
         self.x = self.screen.get_width()
-        self.y = 0  
-        self.length1 = self.screen.get_height()*rand
-        self.length2 = self.screen.get_height() - self.length1 - self.space
-        self.width = self.screen.get_width()/8.0
+        
+        self.pipe = pygame.image.load(os.path.join('','pipe.png'))
+        self.pipeTop = pygame.image.load(os.path.join('','pipetop.png'))
+        
+        self.pipeSize = self.pipe.get_size()
+        self.pipeTopSize = self.pipeTop.get_size()
+        factor = self.screen.get_width()/20.0/self.pipeTopSize[1]
+        self.pipe=pygame.transform.scale(self.pipe,(int(factor*self.pipeSize[0]),int(self.pipeSize[1])))
+        self.pipeTop=pygame.transform.scale(self.pipeTop,(int(factor*self.pipeTopSize[0]),int(factor*self.pipeTopSize[1])))
+        self.pipeSize = self.pipe.get_size()
+        self.pipeTopSize = self.pipeTop.get_size()
+        minHeight = self.screen.get_height()/150.0
+        minY = yPos-2*self.pipeTopSize[1]+2*minHeight
+        maxY = 0
+        minWidth = (minY-maxY)/2.5
+        maxWidth = (minY-maxY)/2
+        self.width = int(random()*(maxWidth-minWidth)+minWidth)
+        totHeight = yPos
+        self.topPipeHeight = int(random()*(minY-maxY-self.width)+minHeight)
+        self.bottomPipeHeight = totHeight-self.topPipeHeight-2*self.pipeTopSize[1]-self.width
+        self.bottom=yPos
+        self.top=0
         
     def update_position(self):
         self.x += -2.0
         
     def update(self):
         self.update_position()
-        pygame.draw.rect(self.screen, (255,255,255),pygame.Rect(self.x,self.y,self.width,self.length1-self.space))     
-        pygame.draw.rect(self.screen, (255,255,255),pygame.Rect(self.x ,(self.y+ self.length1+ self.space),self.width,self.length2))  
+        #print self.topPipeHeight, self.x
+        for i in range(self.topPipeHeight):
+            self.screen.blit(self.pipe,(int(self.x),int(self.top+i)))
+        self.screen.blit(pygame.transform.flip(self.pipeTop,False,True),(int(self.x),int(self.topPipeHeight)))
+        self.screen.blit(self.pipeTop,(int(self.x),int(self.topPipeHeight+self.width)))
+        for i in range(self.topPipeHeight+self.width+self.pipeTopSize[1],self.bottom):
+            self.screen.blit(self.pipe,(int(self.x),int(self.top+i)))
+        
+class Background:
+    
+    def __init__(self,screen):
+        
+        self.screen=screen
+        
+        self.ground = pygame.image.load(os.path.join('','ground.png'))
+        self.sky1 = pygame.image.load(os.path.join('','sky1.png'))
+        self.sky2 = pygame.image.load(os.path.join('','sky2.png'))
+        
+        self.groundSize = self.ground.get_size()
+        self.sky1Size = self.sky1.get_size()
+        self.sky2Size = self.sky2.get_size()
+        
+        totalSize = self.sky1Size[1]+self.groundSize[1]
+        factor = self.screen.get_height()*1.0/totalSize
+        
+        self.sky1=pygame.transform.scale(self.sky1,(int(self.sky1Size[0]*factor),int(self.sky1Size[1]*factor)))
+        self.sky2=pygame.transform.scale(self.sky2,(int(self.sky2Size[0]*factor),int(self.sky1Size[1]*factor)))
+        self.ground=pygame.transform.scale(self.ground,(int(self.groundSize[0]*factor),self.screen.get_height()-int(self.sky2Size[1]*factor)))
+        
+        self.groundSize = self.ground.get_size()
+        self.sky1Size = self.sky1.get_size()
+        self.sky2Size = self.sky2.get_size()
+        
+        self.groundXPos = 0
+        self.groundYPos = self.screen.get_height()-self.groundSize[1]
+        self.sky1XPos = 0
+        self.sky1YPos = 0
+        self.sky2XPos = self.sky1XPos + self.sky1Size[0]
+        self.sky2YPos = 0
+    
+    def updateGround(self):
+        self.groundXPos-=2
+        if self.groundXPos+self.groundSize[0]<=0:
+            self.groundXPos=0
+    
+    def updateSky(self):
+        self.sky1XPos-=0.5
+        self.sky2XPos-=0.5
+        if self.sky1XPos+self.sky1Size[0]<=0:
+            self.sky1XPos=self.sky2XPos+self.sky2Size[0]
+        if self.sky2XPos+self.sky2Size[0]<=0:
+            self.sky2XPos=self.sky1XPos+self.sky1Size[0]    
+        
+    def update(self):
+        self.updateGround()
+        self.updateSky()
+        
+        for i in range(self.screen.get_width()/self.groundSize[0]+2):
+            self.screen.blit(self.ground,(self.groundXPos+i*self.groundSize[0],self.groundYPos))
+        
+        self.screen.blit(self.sky1,(int(self.sky1XPos),int(self.sky1YPos)))
+        self.screen.blit(self.sky2,(int(self.sky2XPos),int(self.sky2YPos)))
 
 if __name__ =='__main__':
     game = FloppyBird()
