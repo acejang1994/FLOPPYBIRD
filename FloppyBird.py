@@ -30,11 +30,18 @@ class FloppyBird:
         self.score =0
 
         self.bird=Bird(self.screen)
-     
+        self.soundPlayed=False
         self.startGame = False
 
         self.pipes = []    
+        self.song=pygame.mixer.music.load('Pirates of the caribbean 8-bit.mp3')        
+        pygame.mixer.music.play()
         
+    def explosion(self):
+        self.track = pygame.mixer.music.load('Explosion.wav')        
+        pygame.mixer.music.play()
+        self.soundPlayed=True
+                            
     def display_score(self):
         message = 'Score: ' + str(self.score)
         fontobject=pygame.font.SysFont('Arial', 18)
@@ -46,8 +53,9 @@ class FloppyBird:
         fontobject=pygame.font.SysFont('Arial', 18)
         self.screen.blit(fontobject.render(message, 1, (255, 255, 255)),(self.screen.get_width()*0.15,self.screen.get_height()*0.4))
         
+        
     def display_loss(self):
-        message = 'YOU LOST'
+        message = 'YOU LOST'  
         fontobject=pygame.font.SysFont('Arial', 50)
         self.screen.blit(fontobject.render(message, 1, (255, 255, 255)),(self.screen.get_width()/4.0,self.screen.get_height()/2.5))
             
@@ -62,8 +70,7 @@ class FloppyBird:
         if self.pipes[-1].x==self.screen.get_width()-250:
             self.pipes.append(Pipe(self.screen))
     
-    def game(self):
-            
+    def game(self):            
         if self.bird.yposition>=self.screen.get_height()-self.bird.picture.get_height():
             return False
         else:
@@ -100,8 +107,10 @@ class FloppyBird:
                 self.bird.drawInit()
                 self.display_instructions()
         else:
-           self.display_loss()
-        
+            if not self.soundPlayed:
+                self.explosion()
+            self.display_loss()
+                    
         pygame.display.flip()
         
 class Bird:
@@ -121,6 +130,8 @@ class Bird:
         self.yvelocity += self.acceleration
         if self.yposition>self.screen.get_height()-self.picture.get_height()*0.5:                
             self.yposition=self.screen.get_height()-self.picture.get_height()*0.5
+        elif self.yposition<0:                
+            self.yposition=0
             
     def jump(self):
         self.yvelocity=-7.0
@@ -159,7 +170,7 @@ class Pipe:
         self.width = self.screen.get_width()/8.0
         
     def update_position(self):
-        self.x += -2.0
+        self.x += -2.0 
         
     def update(self):
         self.update_position()
