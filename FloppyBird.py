@@ -54,9 +54,9 @@ class FloppyBird:
                     self.bird.jump()
         
         self.display_score()
-            if self.pipe.x == 0:
-                self.pipe.x = self.screen.get_width()
-                self.pipe.update()
+        if self.pipe.x == -100:
+            self.pipe.x = self.screen.get_width()
+            self.pipe.update()
                 
         self.bird.update()
         self.pipe.update()
