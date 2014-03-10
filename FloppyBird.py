@@ -10,7 +10,6 @@ import os
 from os import chdir
 from random import *
 from os.path import dirname
-import numpy as np
 
 class FloppyBird:
     
@@ -38,6 +37,7 @@ class FloppyBird:
         self.pipes = []    
         self.song=pygame.mixer.music.load('Pirates of the caribbean 8-bit.mp3')        
         pygame.mixer.music.play()
+        self.gameOn=True
         
     def explosion(self):
         self.track = pygame.mixer.music.load('Explosion.wav')        
@@ -75,33 +75,35 @@ class FloppyBird:
         if self.pipes[-1].x==self.screen.get_width()-250:
             self.pipes.append(Pipe(self.screen,self.bg.sky1Size[1]))
             
-    def gameOn(self):            
-        if self.bird.yposition>=self.screen.get_height()-self.bird.picture.get_height():
-            return False
+    def isGameOn(self):            
+        if self.bird.yposition>=self.screen.get_height()-self.bird.picture.get_height()-self.bg.groundSize[1]:
+            self.gameOn=False
         for pipe in self.pipes:
-            if self.bird.xposition in range(int(pipe.x) , int(pipe.x+pipe.pipeSize[0])) and self.bird.yposition in range(0, int(pipe.topPipeHeight+pipe.pipeTopSize[1])):
-                return False
-            if self.bird.xposition +self.bird.picture.get_width() in range(int(pipe.x) , int(pipe.x+pipe.pipeSize[0])) and self.bird.yposition in range(0, int(pipe.topPipeHeight+pipe.pipeTopSize[1])):
-                return False
-            if self.bird.xposition in range(int(pipe.x) , int(pipe.x+pipe.pipeSize[0])) and self.bird.yposition +self.bird.picture.get_height() in range(0, int(pipe.topPipeHeight+pipe.pipeTopSize[1])):
-                return False
-            if self.bird.xposition +self.bird.picture.get_width() in range(int(pipe.x) , int(pipe.x+pipe.pipeSize[0])) and self.bird.yposition +self.bird.picture.get_height() in range(0, int(pipe.topPipeHeight+pipe.pipeTopSize[1])):
-                return False
-            
-            if self.bird.xposition in range(int(pipe.x) , int(pipe.x+pipe.pipeSize[0])) and self.bird.yposition in range(int(pipe.topPipeHeight+pipe.pipeTopSize[1]+ pipe.width), int(pipe.topPipeHeight+pipe.pipeTopSize[1]+ pipe.width+ pipe.bottomPipeHeight+pipe.pipeTopSize[1])):
-                return False
-            if self.bird.xposition +self.bird.picture.get_width() in range(int(pipe.x) , int(pipe.x+pipe.pipeSize[0])) and self.bird.yposition in range(int(pipe.topPipeHeight+pipe.pipeTopSize[1]+ pipe.width), int(pipe.topPipeHeight+pipe.pipeTopSize[1]+ pipe.width+pipe.bottomPipeHeight+pipe.pipeTopSize[1])):
-                return False
-            if self.bird.xposition in range(int(pipe.x) , int(pipe.x+pipe.pipeSize[0])) and self.bird.yposition +self.bird.picture.get_height() in range(int(pipe.topPipeHeight+pipe.pipeTopSize[1]+ pipe.width), int(pipe.topPipeHeight+pipe.pipeTopSize[1]+ pipe.width+pipe.bottomPipeHeight+pipe.pipeTopSize[1])):
-                return False
-            if self.bird.xposition +self.bird.picture.get_width() in range(int(pipe.x) , int(pipe.x+pipe.pipeSize[0])) and self.bird.yposition +self.bird.picture.get_height() in range(int(pipe.topPipeHeight+pipe.pipeTopSize[1]+ pipe.width), int(pipe.topPipeHeight+pipe.pipeTopSize[1]+ pipe.width+pipe.bottomPipeHeight+pipe.pipeTopSize[1])):
-                return False
-                                                                
+            bird_x = int(self.bird.xposition)
+            bird_y = int(self.bird.yposition)
+            bird_width = int(self.bird.picture.get_width())
+            bird_height = int(self.bird.picture.get_height())
+#            print int(pipe.topPipeHeight + pipe.pipeTopSize[1])
+#            print int(pipe.x) , int(pipe.x+pipe.pipeSize[0])
+#            pygame.draw.circle(self.screen,(255,0,0),(int(bird_x),int(bird_y)),2)
+#            pygame.draw.circle(self.screen,(255,0,0),(int(bird_x+bird_width),int(bird_y)),2)
+#            pygame.draw.circle(self.screen,(255,0,0),(int(bird_x),int(bird_y+bird_height)),2)
+#            pygame.draw.circle(self.screen,(255,0,0),(int(bird_x+bird_width),int(bird_y+bird_height)),2)
+#            pygame.draw.circle(self.screen,(255,0,0),(int(pipe.x),int(pipe.topPipeHeight+pipe.pipeTopSize[1])),2)
+#            pygame.draw.circle(self.screen,(255,0,0),(int(pipe.x+pipe.pipeSize[0]),int(pipe.topPipeHeight+ pipe.width)),2)
 
-     
-        return True
-        
-    
+                        
+            if bird_x in range(int(pipe.x) , int(pipe.x+pipe.pipeSize[0])) and bird_y in range(0, int(pipe.topPipeHeight + pipe.pipeTopSize[1])):
+               self.gameOn=False
+            if bird_x +bird_width in range(int(pipe.x) , int(pipe.x+pipe.pipeSize[0])) and bird_y in range(0, int(pipe.topPipeHeight+pipe.pipeTopSize[1])):
+                self.gameOn=False
+            if bird_x +bird_width in range(int(pipe.x) , int(pipe.x+pipe.pipeSize[0])) and bird_y +bird_height in range(0, int(pipe.topPipeHeight+pipe.pipeTopSize[1])):
+                self.gameOn=False
+            
+            if bird_x in range(int(pipe.x) , int(pipe.x+pipe.pipeSize[0])) and bird_y +bird_height in range(int(pipe.topPipeHeight+ pipe.width), int(pipe.topPipeHeight+pipe.pipeTopSize[1]+ pipe.width+pipe.bottomPipeHeight+pipe.pipeTopSize[1])):
+                self.gameOn=False
+            if bird_x +bird_width in range(int(pipe.x) , int(pipe.x+pipe.pipeSize[0])) and bird_y +bird_height in range(int(pipe.topPipeHeight+ pipe.width), int(pipe.topPipeHeight+pipe.pipeTopSize[1]+ pipe.width+pipe.bottomPipeHeight+pipe.pipeTopSize[1])):
+                self.gameOn=False                                                                            
             
     def update(self):
         self.clock.tick(60)
@@ -117,9 +119,11 @@ class FloppyBird:
                     self.startGame=True
                     self.bird.jump()
          
-        if self.gameOn():
+        
                         
-            if self.startGame:
+        if self.startGame:
+            if self.gameOn:
+                self.isGameOn()
                 self.bg.update()
                 self.update_pipes()
                 for pipe in self.pipes:
@@ -128,13 +132,14 @@ class FloppyBird:
                         self.update_display_score()
                 self.bird.update()
                 self.display_score()
-            else: 
-                self.bird.drawInit()
-                self.display_instructions()
-        else:
-            if not self.soundPlayed:
-                self.explosion()
-            self.display_loss()
+            else:
+                if not self.soundPlayed:
+                    self.explosion()
+                    self.display_loss()
+        else: 
+            self.bird.drawInit()
+            self.display_instructions()
+        
                     
         pygame.display.flip()
         
@@ -209,6 +214,8 @@ class Pipe:
         self.screen.blit(self.pipeTop,(int(self.x),int(self.topPipeHeight+self.width)))
         for i in range(self.topPipeHeight+self.width+self.pipeTopSize[1],self.bottom):
             self.screen.blit(self.pipe,(int(self.x),int(self.top+i)))
+#        pygame.draw.line(self.screen, (0,0,0) ,(self.x, 0), (self.x, self.topPipeHeight+self.pipeTopSize[1]))
+#        pygame.draw.line(self.screen, (0,0,0) ,(self.x+self.pipeSize[0], self.topPipeHeight+self.pipeTopSize[1] +10), (self.x, self.topPipeHeight+self.pipeTopSize[1]+10))       
         
 class Background:
     
