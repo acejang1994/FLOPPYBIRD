@@ -52,8 +52,8 @@ class FloppyBird:
         
     def display_instructions(self):
         message = 'PRESS THE [SPACE] KEY TO START!'
-        fontobject=pygame.font.SysFont('Arial', 18)
-        self.screen.blit(fontobject.render(message, 1, (255, 255, 255)),(self.screen.get_width()*0.15,self.screen.get_height()*0.4))
+        fontobject=pygame.font.SysFont('Arial', 20)
+        self.screen.blit(fontobject.render(message, 1, (0, 0,0)),(self.screen.get_width()*0.15,self.screen.get_height()*0.4))
         
         
     def display_loss(self):
@@ -83,21 +83,10 @@ class FloppyBird:
             bird_y = int(self.bird.yposition)
             bird_width = int(self.bird.picture.get_width())
             bird_height = int(self.bird.picture.get_height())
-#            print int(pipe.topPipeHeight + pipe.pipeTopSize[1])
-#            print int(pipe.x) , int(pipe.x+pipe.pipeSize[0])
-#            pygame.draw.circle(self.screen,(255,0,0),(int(bird_x),int(bird_y)),2)
-#            pygame.draw.circle(self.screen,(255,0,0),(int(bird_x+bird_width),int(bird_y)),2)
-#            pygame.draw.circle(self.screen,(255,0,0),(int(bird_x),int(bird_y+bird_height)),2)
-#            pygame.draw.circle(self.screen,(255,0,0),(int(bird_x+bird_width),int(bird_y+bird_height)),2)
-#            pygame.draw.circle(self.screen,(255,0,0),(int(pipe.x),int(pipe.topPipeHeight+pipe.pipeTopSize[1])),2)
-#            pygame.draw.circle(self.screen,(255,0,0),(int(pipe.x+pipe.pipeSize[0]),int(pipe.topPipeHeight+ pipe.width)),2)
-
                         
             if bird_x in range(int(pipe.x) , int(pipe.x+pipe.pipeSize[0])) and bird_y in range(0, int(pipe.topPipeHeight + pipe.pipeTopSize[1])):
                self.gameOn=False
             if bird_x +bird_width in range(int(pipe.x) , int(pipe.x+pipe.pipeSize[0])) and bird_y in range(0, int(pipe.topPipeHeight+pipe.pipeTopSize[1])):
-                self.gameOn=False
-            if bird_x +bird_width in range(int(pipe.x) , int(pipe.x+pipe.pipeSize[0])) and bird_y +bird_height in range(0, int(pipe.topPipeHeight+pipe.pipeTopSize[1])):
                 self.gameOn=False
             
             if bird_x in range(int(pipe.x) , int(pipe.x+pipe.pipeSize[0])) and bird_y +bird_height in range(int(pipe.topPipeHeight+ pipe.width), int(pipe.topPipeHeight+pipe.pipeTopSize[1]+ pipe.width+pipe.bottomPipeHeight+pipe.pipeTopSize[1])):
@@ -137,9 +126,10 @@ class FloppyBird:
                     self.explosion()
                     self.display_loss()
         else: 
+            self.bg.update_static()
             self.bird.drawInit()
             self.display_instructions()
-        
+
                     
         pygame.display.flip()
         
@@ -249,6 +239,13 @@ class Background:
         self.sky2XPos = self.sky1XPos + self.sky1Size[0]
         self.sky2YPos = 0
     
+    def update_static(self):
+        self.screen.blit(self.sky1,(int(self.sky1XPos),int(self.sky1YPos)))
+        self.screen.blit(self.sky2,(int(self.sky2XPos),int(self.sky2YPos)))
+        
+        for i in range(self.screen.get_width()/self.groundSize[0]+2):
+            self.screen.blit(self.ground,(self.groundXPos+i*self.groundSize[0],self.groundYPos))
+         
     def updateGround(self):
         self.groundXPos-=2
         if self.groundXPos+self.groundSize[0]<=0:
