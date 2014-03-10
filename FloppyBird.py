@@ -40,28 +40,16 @@ class FloppyPaul:
     This class handles all of the game modules and the actual game playing
     """
     
-    def __init__(self):
+    def __init__(self, screen2, clock2):
         
         """ 
         Constructor to initialize the FloppyPaul class. This includes initializing
         all classes and variables and methods associated with this class.
         """
         
-        # Initialize pygame
-        pygame.init()
-        
-        # Set the width and height of the window relative to the screen resolution
-        infoObject = pygame.display.Info()
-        screenWidth,screenHeight = infoObject.current_w, infoObject.current_h
-        height=int(screenHeight/2)
-        width=int(height)
-        self.screen = pygame.display.set_mode((width,height))
-        
-        # Set the title of the window
-        pygame.display.set_caption('Floppy Paul')
-        
-        # Initialize pygame's clock
-        self.clock=pygame.time.Clock()
+        # Get screen and clock variables
+        self.screen = screen2
+        self.clock = clock2
         
         # Initialize Bird class, Background class, and Pipe array
         self.bird=Bird(self.screen) 
@@ -79,20 +67,6 @@ class FloppyPaul:
         # Start playing the song
         self.song=pygame.mixer.music.load('Pirates of the caribbean 8-bit.mp3')        
         pygame.mixer.music.play()
-
-        
-    def explosion(self):
-        
-        """
-        Play the explosion sound when the bird dies
-        """
-        
-        # Load and play the explosion sound
-        self.track = pygame.mixer.music.load('Explosion.wav')        
-        pygame.mixer.music.play()
-        
-        # Indicate that the sound has been played so it doesn't play again
-        self.soundPlayed=True
                             
     def display_score(self):
         
@@ -120,25 +94,6 @@ class FloppyPaul:
         # Write the message to the middle of the screen
         self.screen.blit(fontobject.render(message, 1, (0, 0,0)),(self.screen.get_width()*0.15,self.screen.get_height()*0.4))
         
-        
-    def display_loss(self):
-        
-        """
-        If you lose, display a message indicating that user has lost and
-        display the score
-        """
-        
-        # Instantiate messages to post on screen
-        message = 'YOU LOST'  
-        message2 = 'Your score: '+ str(self.score)
-        
-        # Set font for messages
-        fontobject=pygame.font.SysFont('Courier', int(self.screen.get_height()/9.0))
-        fontobject2=pygame.font.SysFont('Courier', int(self.screen.get_height()/15.0))
-        
-        # Add message to screen
-        self.screen.blit(fontobject2.render(message2, 1, (255, 255, 255)),(self.screen.get_width()/3.0,self.screen.get_height()/1.8))
-        self.screen.blit(fontobject.render(message, 1, (255, 255, 255)),(self.screen.get_width()/4.0,self.screen.get_height()/2.5))
             
     def update_display_score(self):
         
@@ -267,14 +222,8 @@ class FloppyPaul:
             
             # If the user is dead then...
             else:
+                return [5,[self.score,self.bg]]
                 
-                # Play the explosion if it hasn't been played already
-                if not self.soundPlayed:
-                    self.explosion()
-                    
-                # Indicate the user that he has lost
-                self.display_loss()
-            
         # If the game hasn't started, then add static pictures of the bird,
         # background, and instructions
         else: 
@@ -284,6 +233,8 @@ class FloppyPaul:
 
         # Pygame function to update graphics
         pygame.display.flip()
+
+       
         
 class Bird:
     
@@ -547,13 +498,146 @@ class Background:
         self.screen.blit(self.sky1,(int(self.sky1XPos),int(self.sky1YPos)))
         self.screen.blit(self.sky2,(int(self.sky2XPos),int(self.sky2YPos)))
         
+class Death:             
+    
+    def __init__(self,screen,clock,score,bg):
+        self.screen = screen
+        self.clock = clock
+        self.score= score
+        self.explosion()
+        self.bg = bg
+        self.button=pygame.image.load(os.path.join('','paul.png'))
         
-# Main function to run all the code
-if __name__ =='__main__':
+    def display_loss(self):
+        
+        """
+        If you lose, display a message indicating that user has lost and
+        display the score
+        """
+        
+        # Instantiate messages to post on screen
+        message = 'YOU LOST'  
+        message2 = 'Your score: '+ str(self.score)
+        
+        # Set font for messages
+        fontobject=pygame.font.SysFont('Courier', int(self.screen.get_height()/9.0))
+        fontobject2=pygame.font.SysFont('Courier', int(self.screen.get_height()/15.0))
+        
+        # Add message to screen
+        self.screen.blit(fontobject2.render(message2, 1, (0,0,0)),(self.screen.get_width()/4.0,self.screen.get_height()/1.8))
+        self.screen.blit(fontobject.render(message, 1, (0,0,0)),(self.screen.get_width()/4.5,self.screen.get_height()/2.5))
+        
+        
+    def explosion(self):
+        
+        """
+        Play the explosion sound when the bird dies
+        """
+        
+        # Load and play the explosion sound
+        self.track = pygame.mixer.music.load('Explosion.wav')        
+        pygame.mixer.music.play()
+        
+        # Indicate that the sound has been played so it doesn't play again
+        self.soundPlayed=True
     
-    # Initialize the Floppy Paul game
-    game = FloppyPaul()
+    def update(self):
+
+        self.bg.update_static()
+        self.display_loss()
+        #self.button=gameButton((20,50),(100,100))
+        #self.button.update()
+        self.b = self.screen.blit(self.button,(170,300 ))
+        
+        # For any user inputs given
+        for event in pygame.event.get():
+            
+            # Quit the game if the exit buttom is pressed
+            if event.type==QUIT:
+                exit()
+            
+            # If a keyboard button is presseed
+            if event.type == KEYDOWN:
+                
+                # Quit the game if the escape button is pressed
+                if event.key == K_ESCAPE:
+                    exit()        
+            if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+                pos = pygame.mouse.get_pos()
+                if self.b.collidepoint(pos):
+                 return [4]
+
+        pygame.display.flip()
+        
+#class gameButton:
+#    
+#    def __init__(self,size,position):
+#        self.buttonNormal = pygame.image.load(os.path.join('','PlayAgainButton.png'))
+#        self.buttonHover = pygame.image.load(os.path.join('','PlayAgainButton.png'))
+#        factorh = size[1]*1.0/self.buttonNormal.get_height()
+#        factorw = size[0]*1.0/self.buttonNormal.get_width()
+#        self.position=position
+#        self.buttonNormal=pygame.transform.scale(self.buttonNormal,(int(factorw*self.buttonNormal.get_width()),int(factorh*self.buttonNormal.get_height())))
+#    
+#    def update(self):
+#        b = self.screen.blit(self.buttonNormal,(int(self.position[0]),int(self.position[1])))
+#        pos = pygame.mouse.get_pos()
+#        if b.collidepoint(pos):
+#            self.screen.blit(self.buttonHover,(int(self.position[0]),int(self.position[1])))
+        
+# Main Class to run all the code
+class Main:
     
-    # Keep updating the game variable    
-    while 1:
-        game.update()
+    """
+    Handles all of the classes and code in this game
+    """
+    
+    def __init__(self):
+        
+        """
+        Initialize the Main class
+        """
+        
+        # Initialize pygame
+        pygame.init()
+        
+        # Set the width and height of the window relative to the screen resolution
+        infoObject = pygame.display.Info()
+        screenWidth,screenHeight = infoObject.current_w, infoObject.current_h
+        height=int(screenHeight/2)
+        width=int(height)
+        self.screen = pygame.display.set_mode((width,height))
+            
+        # Set the title of the window
+        pygame.display.set_caption('Floppy Paul')
+        
+        # Initialize pygame's clock
+        self.clock=pygame.time.Clock()    
+                
+    def run_game(self):
+        
+        """
+        Run the game
+        """
+        
+        newScreen=4
+        value = None
+        while newScreen!=7:
+            screen=newScreen
+            if screen==4:
+                currentScreen=FloppyPaul(self.screen,self.clock)
+                while newScreen==4:
+                    output=currentScreen.update()
+                    if output:
+                        newScreen=output[0]
+                        value = output[1]
+            if screen==5:
+                currentScreen = Death(self.screen,self.clock,value[0],value[1])
+                while newScreen==5:
+                    output=currentScreen.update()
+                    if output:
+                        newScreen=output[0]
+                        
+# Execute the code
+if __name__ == '__main__':
+    Main().run_game()
